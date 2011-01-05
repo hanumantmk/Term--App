@@ -2,6 +2,8 @@ package Term::Pager;
 
 use strict;
 
+use Term::ReadKey;
+
 my $clear_string = `clear`;
 
 sub new {
@@ -43,9 +45,9 @@ sub down {
 }
 
 sub get_term_size {
-  my $size = `stty size`;
-  chomp $size;
-  return split / /, $size;
+  my ($cols, $rows) = GetTerminalSize();
+
+  return ($rows, $cols);
 }
 
 sub print {
