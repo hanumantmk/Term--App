@@ -1,6 +1,8 @@
-package ASCII::SpreadSheet;
+package Term::App::Widget::SpreadSheet;
 
 use strict;
+
+extends 'Term::App::Widget';
 
 use List::Util qw( max );
 
@@ -9,20 +11,19 @@ use constant FORMAT => {
   d => sub { sprintf("%d",   $_[0]) },
 };
 
-sub new {
-  my ($class, $opts) = @_;
+has headers => (is => 'rw', isa => 'ArrayRef[Str]');
+has data_types => (is => 'rw', isa => 'ArrayRef[Str]');
 
-  $opts ||= {};
-
-  bless $opts, $class;
-}
+has input => (is => 'rw', isa => 'ArrayRef[ArrayRef[Str]]');
 
 sub render {
-  my ($self, $input) = @_;
+  my $self = shift;
+
+  my $input = $self->input;
 
   my @data;
 
-  if (my $data_types = $self->{data_types}) {
+  if (my $data_types = $self->data_types) {
     @data = map {
       if (ref $_ eq 'ARRAY') {
 	my $i = 0;
@@ -43,8 +44,8 @@ sub render {
     @data = @$input;
   }
 
-  my @headers = $self->{headers}
-    ? @{$self->{headers}}
+  my @headers = $self->headers
+    ? @{$self->headers}
     : ();
 
   my @max_sizes;
@@ -76,7 +77,7 @@ sub render {
   my $format_string = join(" | ", map { "%${_}s" } @max_sizes);
   my $break_string  = join("-+-", map { "-" x $_ } @max_sizes);
 
-  return join('', map { "$_\n" } (
+  [
     sprintf($format_string, @headers),
     $break_string,
     (map {
@@ -84,7 +85,9 @@ sub render {
 	? sprintf($format_string, @$_)
 	: $break_string
     } @data),
-  ));
+  ];
 }
+
+no Moose;
 
 1;

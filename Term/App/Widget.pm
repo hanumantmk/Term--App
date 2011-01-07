@@ -8,12 +8,28 @@ use Moose::Util qw( apply_all_roles );
 
 use List::Util qw( reduce max );
 
-extends 'Term::App::Widget';
-
 has rows => (is => 'ro', isa => 'Int');
 has cols => (is => 'ro', isa => 'Int');
 
-sub render { confess "Must be implemented in the child" }
+sub render {
+  my $self = shift;
+
+  my @lines = @{inner()};
+
+  if (scalar(@lines) > $self->rows) {
+    splice(@lines, $self->rows - 1);
+  }
+
+  [map {
+    if (length($_) > $self->cols) {
+      substr($_, $self->cols - 1) = '';
+    }
+
+    $_;
+  } @lines];
+}
+
+sub receive_key_events { }
 
 sub BUILD {
   my $self = shift;

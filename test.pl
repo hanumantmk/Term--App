@@ -2,20 +2,13 @@
 
 use strict;
 
-use Log::Watcher;
+use Term::App;
+use Term::App::Widget::Text;
 
-my @lines;
-
-my $watcher = Log::Watcher->new({
-  file     => $ARGV[0],
-  callback => sub {
-    my $input = shift;
-    chomp($input);
-
-    push @lines, $input;
-
-    return join("\n", @lines);
-  },
+my $app = Term::App->new({
+  child => Term::App::Widget::Text->new({
+    text => "foo\nbar\nbaz\n",
+  }),
 });
 
-$watcher->loop;
+$app->loop;

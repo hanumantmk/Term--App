@@ -31,29 +31,19 @@ sub down {
   $self->row($self->row + 1);
 }
 
-sub render {
-  my ($self, $text) = @_;
+around render => sub {
+  my ($orig, $self) = @_;
 
   $rows = $self->rows;
   $cols = $self->cols;
 
-  my @lines = split /\n/, $text, -1;
+  my @lines = @{$self->$orig()};
 
-  splice(@lines, 0, $self->{row});
+  splice(@lines, 0, $self->row);
 
-  if (scalar(@lines) > $rows) {
-    splice(@lines, $rows - 1);
-  }
-
-  @lines = map {
-    substr($_, 0, $self->{col}) = '';
-
-    if (length($_) > $cols) {
-      substr($_, $cols - 1) = '';
-    }
+  [ map {
+    substr($_, 0, $self->col) = '';
 
     $_;
-  } @lines;
-
-  return join('', map { "$_\n" } @lines);
-}
+  } @lines ];
+};
