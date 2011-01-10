@@ -11,6 +11,9 @@ use List::Util qw( reduce max );
 has rows => (is => 'ro', isa => 'Int');
 has cols => (is => 'ro', isa => 'Int');
 
+has bindings => (is => 'ro', isa => 'HashRef', default => sub { {} } );
+has plugins => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
+
 sub render {
   my $self = shift;
 
@@ -29,12 +32,20 @@ sub render {
   } @lines];
 }
 
-sub receive_key_events { }
+sub receive_key_events {
+  my ($self, $tokens) = @_;
+
+  foreach my $token (@$tokens) {
+    if (my $sub = $self->bindings->{$token}) {
+      $self->$sub($token);
+    }
+  }
+}
 
 sub BUILD {
   my $self = shift;
 
-  $self->{plugins} and apply_all_roles($self, @{$self->{plugins}});
+  apply_all_roles($self, map { "Term::App::Widget::Role::$_" } @{$self->plugins});
 }
 
 no Moose;

@@ -4,8 +4,8 @@ use strict;
 
 use Moose::Role;
 
-has row => (is => 'rw', isa => 'Int');
-has col => (is => 'rw', isa => 'Int');
+has row => (is => 'rw', isa => 'Int', default => 0);
+has col => (is => 'rw', isa => 'Int', default => 0);
 
 sub left {
   my $self = shift;
@@ -34,8 +34,8 @@ sub down {
 around render => sub {
   my ($orig, $self) = @_;
 
-  $rows = $self->rows;
-  $cols = $self->cols;
+  my $rows = $self->rows;
+  my $cols = $self->cols;
 
   my @lines = @{$self->$orig()};
 
@@ -47,3 +47,7 @@ around render => sub {
     $_;
   } @lines ];
 };
+
+no Moose;
+
+1;

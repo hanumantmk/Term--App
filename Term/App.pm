@@ -28,7 +28,9 @@ sub draw {
 sub loop {
   my $self = shift;
 
-  ReadMode 4;
+  $self->draw($self->child->render);
+
+  ReadMode 3;
 
   my $user = AnyEvent->io(
     fh   => \*STDIN,
@@ -39,17 +41,20 @@ sub loop {
 	my $tokens = tokenize_ansi($input);
 
 	if (grep { $_ eq 'q' } @$tokens) {
-	  ReadMode 0;
 	  exit 0;
 	}
 
-	$self->child->receive_key_events(tokenize_ansi($input));
+	$self->child->receive_key_events($tokens);
 	$self->draw($self->child->render);
       }
     },
   );
 
   AnyEvent->condvar->recv;
+}
+
+END {
+  ReadMode 0;
 }
 
 no Moose;
