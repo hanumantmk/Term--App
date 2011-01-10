@@ -8,8 +8,8 @@ use Moose::Util qw( apply_all_roles );
 
 use List::Util qw( reduce max );
 
-has rows => (is => 'ro', isa => 'Int');
-has cols => (is => 'ro', isa => 'Int');
+has rows => (is => 'rw', isa => 'Int');
+has cols => (is => 'rw', isa => 'Int');
 
 has bindings => (is => 'ro', isa => 'HashRef', default => sub { {} } );
 has plugins => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );

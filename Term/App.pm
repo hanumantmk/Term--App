@@ -13,10 +13,17 @@ has 'child' => (is => 'ro', isa => 'Term::App::Widget');
 has 'screen' => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
 
 sub draw {
-  my ($self, $to_draw) = @_;
+  my $self = shift;
 
-#TODO use ANSI sequences to avoid having to clear and redraw
+  my ($cols, $rows) = GetTerminalSize;
+
+  $self->child->rows($rows);
+  $self->child->cols($cols);
+
+  my $to_draw = $self->child->render;
   
+#TODO use ANSI sequences to avoid having to clear and redraw
+
   print `clear`;
   print join('', map { "$_\n" } @$to_draw);
 
@@ -28,7 +35,7 @@ sub draw {
 sub loop {
   my $self = shift;
 
-  $self->draw($self->child->render);
+  $self->draw;
 
   ReadMode 3;
 
@@ -45,7 +52,7 @@ sub loop {
 	}
 
 	$self->child->receive_key_events($tokens);
-	$self->draw($self->child->render);
+	$self->draw;
       }
     },
   );
