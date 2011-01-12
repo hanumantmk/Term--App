@@ -59,7 +59,7 @@ sub draw {
 
   my ($cols, $rows) = GetTerminalSize;
 
-  $self->child->rows($rows-1);
+  $self->child->rows($rows);
   $self->child->cols($cols);
 
   my $to_draw = $self->child->render;
@@ -68,7 +68,7 @@ sub draw {
 
   return if (join('', map { "$_\n" } @$to_draw) eq join('', map { "$_\n" } @{$self->screen}));
 
-  $self->stdout->push_write("\033[H" . join('', map { "$_\n" } @$to_draw));
+  $self->stdout->push_write("\033[H" . join("\n", @$to_draw));
 
   $self->screen($to_draw);
 
@@ -84,6 +84,8 @@ sub loop {
 
   $self->quit_condvar->recv;
 
+  $self->stdout->push_write("\033[?25h");
+
   ReadMode 0;
 
   return;
@@ -93,6 +95,8 @@ sub BUILD {
   my $self = shift;
 
   weaken($self);
+
+  $self->stdout->push_write("\033[?25l");
 
   $self->child->app($self);
 

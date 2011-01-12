@@ -22,6 +22,9 @@ has app => (is => 'rw', weak_ref => 1);
 sub render {
   my $self = shift;
 
+  return [] if ($self->rows < 1);
+  return [('') x $self->rows] if ($self->cols < 1);
+
   my @lines = @{$self->_render};
 
   if (scalar(@lines) > $self->rows) {

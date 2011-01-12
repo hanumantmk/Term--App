@@ -16,7 +16,7 @@ sub _render {
 
   reduce {
     [map {
-      sprintf("%-." . $self->cols . "s", $a->[$_] . $b->[$_]);
+      sprintf("%-" . $self->cols . "s", join('', map { defined $_ ? $_ : '' } $a->[$_], $b->[$_]));
     } (0..(max(scalar(@$a), scalar(@$b)) - 1))];
   } map {
     $_->rows($rows);
