@@ -12,19 +12,17 @@ around render => sub {
 
   my $border = '+' . ('-' x ($cols - 2)) . '+';
 
+  $self->rows($rows - 2);
+  $self->cols($cols - 2);
+
   my @lines = @{$self->$orig()};
 
-  if (scalar(@lines) < $rows - 3) {
-    (@lines) = (@lines, ('') x (($rows - 3) - scalar(@lines)));
-  } elsif (scalar(@lines) > $rows - 3) {
-    splice(@lines, $rows-3);
-  }
+  $self->rows($rows);
+  $self->cols($cols);
 
   [ 
     $border,
-    (map {
-      sprintf("|%-" . ($cols - 2) . "s|", $_);
-    } @lines),
+    (map { "|$_|" } @lines),
     $border,
   ];
 };

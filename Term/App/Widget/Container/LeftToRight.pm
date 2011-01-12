@@ -2,30 +2,29 @@ package Term::App::Widget::Container::LeftToRight;
 
 use strict;
 
-use Moose;
-
 use List::Util qw( reduce max );
 
-extends 'Term::App::Widget';
+use Moose;
 
-has children => (is => 'ro', isa => 'ArrayRef[Term::App]', default => sub { [] });
-has focused => (is => 'ro', isa => 'Term::App');
+extends 'Term::App::Widget::Container';
 
-sub receive_key_events {
-  my ($self, $tokens) = @_;
-
-  $self->focused->receive_key_events($tokens);
-}
-
-augment render => sub {
+sub _render {
   my $self = shift;
+
+  my $cols = int($self->cols / scalar(@{$self->children}));
+  my $rows = $self->rows;
 
   reduce {
     [map {
-      ($a->[$_] || '') . ($b->[$_] || '')
-    } (0..max(scalar(@$a), scalar(@$b)))];
-  } map { $_->render } @{$self->children};
-};
+      sprintf("%-." . $self->cols . "s", $a->[$_] . $b->[$_]);
+    } (0..(max(scalar(@$a), scalar(@$b)) - 1))];
+  } map {
+    $_->rows($rows);
+    $_->cols($cols);
+
+    $_->render;
+  } @{$self->children};
+}
 
 no Moose;
 

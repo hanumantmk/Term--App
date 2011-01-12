@@ -31,7 +31,7 @@ sub down {
   $self->row($self->row + 1);
 }
 
-around render => sub {
+around _render => sub {
   my ($orig, $self) = @_;
 
   my $rows = $self->rows;

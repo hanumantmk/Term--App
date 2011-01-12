@@ -2,6 +2,8 @@ package Term::App::Widget::SpreadSheet;
 
 use strict;
 
+use Moose;
+
 extends 'Term::App::Widget';
 
 use List::Util qw( max );
@@ -14,9 +16,9 @@ use constant FORMAT => {
 has headers => (is => 'rw', isa => 'ArrayRef[Str]');
 has data_types => (is => 'rw', isa => 'ArrayRef[Str]');
 
-has input => (is => 'rw', isa => 'ArrayRef[ArrayRef[Str]]');
+has input => (is => 'rw', isa => 'ArrayRef[ArrayRef[Str]]', default => sub {[]});
 
-sub render {
+sub _render {
   my $self = shift;
 
   my $input = $self->input;
@@ -81,9 +83,18 @@ sub render {
     sprintf($format_string, @headers),
     $break_string,
     (map {
-      ref $_ eq 'ARRAY'
-	? sprintf($format_string, @$_)
-	: $break_string
+      my $d = $_;
+
+      my $i = 0;
+
+      if (ref $d eq 'ARRAY') {
+	for (my $i = scalar(@$d); $i < scalar(@max_sizes); $i++) {
+	  $d->[$i] = '';
+	}
+	sprintf($format_string, @$d);
+      } else {
+	$break_string
+      }
     } @data),
   ];
 }

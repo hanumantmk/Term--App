@@ -6,29 +6,32 @@ use Moose;
 
 use Moose::Util qw( apply_all_roles );
 
-use List::Util qw( reduce max );
+use Scalar::Util qw( weaken );
 
 has rows => (is => 'rw', isa => 'Int');
 has cols => (is => 'rw', isa => 'Int');
 
 has bindings => (is => 'ro', isa => 'HashRef', default => sub { {} } );
 has plugins => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
+has events => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
+
+has has_focus => (is => 'rw', isa => 'Int');
+
+has app => (is => 'rw', weak_ref => 1);
 
 sub render {
   my $self = shift;
 
-  my @lines = @{inner()};
+  my @lines = @{$self->_render};
 
   if (scalar(@lines) > $self->rows) {
     splice(@lines, $self->rows - 1);
+  } elsif (scalar(@lines) < $self->rows) {
+    push @lines, (('') x ($self->rows - scalar(@lines)));
   }
 
   [map {
-    if (length($_) > $self->cols) {
-      substr($_, $self->cols - 1) = '';
-    }
-
-    $_;
+    substr(sprintf("%-" . $self->cols ."s", $_), 0, $self->cols);
   } @lines];
 }
 
@@ -45,7 +48,17 @@ sub receive_key_events {
 sub BUILD {
   my $self = shift;
 
-  apply_all_roles($self, map { "Term::App::Widget::Role::$_" } @{$self->plugins});
+  weaken($self);
+
+  apply_all_roles($self, map { "Term::App::Widget::Role::$_" } @{$self->plugins}) if @{$self->plugins};
+
+  foreach my $event (@{$self->events}) {
+    my $cb = $event->callback;
+    $event->callback(sub {
+      $cb->($self,@_);
+    });
+    $event->register;
+  }
 }
 
 no Moose;

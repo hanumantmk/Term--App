@@ -6,9 +6,9 @@ use Moose;
 
 extends 'Term::App::Widget';
 
-has 'text' => (is => 'rw', isa => 'Str');
+has 'text' => (is => 'rw', isa => 'Str', default => '');
 
-sub render {
+sub _render {
   my $self = shift;
 
   [split /\n/, $self->text];
