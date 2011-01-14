@@ -11,11 +11,15 @@ use Scalar::Util qw( weaken );
 has rows => (is => 'rw', isa => 'Int');
 has cols => (is => 'rw', isa => 'Int');
 
+has preferred_rows => (is => 'rw', isa => 'Int');
+has preferred_cols => (is => 'rw', isa => 'Int');
+
 has bindings => (is => 'ro', isa => 'HashRef', default => sub { {} } );
 has plugins => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 has events => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 
 has has_focus => (is => 'rw', isa => 'Int');
+has weight => (is => 'rw', isa => 'Int', default => 1);
 
 has app => (is => 'rw', weak_ref => 1);
 

@@ -6,7 +6,7 @@ use Moose;
 
 extends 'Term::App::Widget';
 
-has children => (is => 'rw', isa => 'ArrayRef[Term::App::Widget]', default => sub { [] });
+has children => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 
 sub receive_key_events {
   my ($self, $tokens) = @_;
