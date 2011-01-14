@@ -10,6 +10,7 @@ use Term::App::Widget::Container::LeftToRight;
 use Term::App::Widget::Container::TopToBottom;
 use Term::App::Event::TailFile;
 use Term::App::Event::Timer;
+use Term::App::Event::Signal;
 
 my $counter = 1;
 
@@ -54,7 +55,7 @@ my $app = Term::App->new({
 		callback => sub {
 		  my $widget = shift;
 
-		  $widget->text($counter++);
+		  $widget->text($counter++ . "\n" . $widget->rows . "x" . $widget->cols);
 		},
 	      }),
 	    ],
@@ -66,6 +67,14 @@ my $app = Term::App->new({
   events => [
     Term::App::Event::Timer->new({
       seconds => 1,
+      callback => sub {
+        my $app = shift;
+
+        $app->draw;
+      }
+    }),
+    Term::App::Event::Signal->new({
+      signal => "WINCH",
       callback => sub {
         my $app = shift;
 
