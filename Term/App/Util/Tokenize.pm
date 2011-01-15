@@ -12,6 +12,9 @@ use constant SYMBOLS => {
   up_arrow    => join('',map{ chr($_) } (27, 91, 65)),
   down_arrow  => join('',map{ chr($_) } (27, 91, 66)),
 
+  page_up     => join('',map{ chr($_) } (27, 91, 53, 126)),
+  page_down   => join('',map{ chr($_) } (27, 91, 54, 126)),
+
   (map { $_, $_ } ( 'a' .. 'z', 'A' .. 'Z', 0 .. 9 )),
 };
 

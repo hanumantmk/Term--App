@@ -32,7 +32,7 @@ sub render {
   my @lines = @{$self->_render};
 
   if (scalar(@lines) > $self->rows) {
-    splice(@lines, $self->rows - 1);
+    splice(@lines, $self->rows);
   } elsif (scalar(@lines) < $self->rows) {
     push @lines, (('') x ($self->rows - scalar(@lines)));
   }

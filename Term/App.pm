@@ -66,7 +66,7 @@ sub draw {
   
 #TODO use ANSI sequences to avoid having to clear and redraw
 
-  return if (join('', map { "$_\n" } @$to_draw) eq join('', map { "$_\n" } @{$self->screen}));
+  return if (join('', @$to_draw) eq join('', @{$self->screen}));
 
   $self->stdout->push_write("\033[H" . join("\n", @$to_draw));
 
