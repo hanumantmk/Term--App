@@ -61,7 +61,7 @@ around render => sub {
   my @lines = @{$self->$orig()};
 
   if ($self->_row_diff > 0) {
-    $rows--;
+    $self->_col_diff > 0 and $rows--;
     my $size = int($rows * ($rows / ($rows + $self->_row_diff)));
     my $percent = $self->row / $self->_row_diff;
     my $start = int($percent * $rows) - int($percent * $size);
@@ -74,7 +74,7 @@ around render => sub {
 
   if ($self->_col_diff > 0) {
     $lines[-1] = ' ' x $cols;
-    $cols--;
+    $self->_row_diff > 0 and $cols--;
     my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
     my $percent = $self->col / $self->_col_diff;
     my $start = int($percent * $cols) - int($percent * $size);
