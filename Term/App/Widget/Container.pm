@@ -8,11 +8,13 @@ extends 'Term::App::Widget';
 
 has children => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 
-sub receive_key_events {
+override receive_key_events => sub {
   my ($self, $tokens) = @_;
 
+  super;
+
   $_->receive_key_events($tokens) for $self->focused;
-}
+};
 
 sub focused {
   my $self = shift;

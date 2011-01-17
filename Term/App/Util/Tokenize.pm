@@ -14,6 +14,9 @@ use constant SYMBOLS => {
 
   page_up     => join('',map{ chr($_) } (27, 91, 53, 126)),
   page_down   => join('',map{ chr($_) } (27, 91, 54, 126)),
+  
+  tab         => "\t",
+  newline     => "\n",
 
   (map { $_, $_ } ( 'a' .. 'z', 'A' .. 'Z', 0 .. 9 )),
 };

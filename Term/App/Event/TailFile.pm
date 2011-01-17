@@ -23,7 +23,8 @@ sub _build_event {
   if (my $pid = open $fh, "tail -n +0 -F $filename |") {
     $self->pid($pid);
   } else {
-    die "Couldn't tail file $filename: $!";
+    $self->log("Couldn't tail file $filename: $!");
+    return;
   }
 
   AnyEvent::Handle->new(

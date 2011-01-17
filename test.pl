@@ -11,11 +11,21 @@ use Term::App::Widget::Container::TopToBottom;
 use Term::App::Event::TailFile;
 use Term::App::Event::Timer;
 use Term::App::Event::Signal;
+use Term::App::Event::WatchFile;
 
 my $counter = 1;
 
+my ($spreadsheet, $text);
+
 my $app = Term::App->new({
   child => Term::App::Widget::Container::TopToBottom->new({
+    bindings => {
+      tab => sub {
+	my $self = shift;
+
+	$self->toggle_focus($spreadsheet, $text);
+      }
+    },
     children => [
       Term::App::Widget::Time->new({
 	plugins => ["Centered"],
@@ -30,10 +40,9 @@ my $app = Term::App->new({
 	    preferred_cols => 3,
 	    text => "\n" . join("\n", 1..9),
 	  }),
-	  Term::App::Widget::SpreadSheet->new({
+	  ($spreadsheet = Term::App::Widget::SpreadSheet->new({
 	    weight => 2,
 	    plugins => ["Paged", "Border"],
-	    has_scrollbar => 0,
 	    has_focus => 1,
 	    bindings => { left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down' },
 	    events => [
@@ -46,18 +55,39 @@ my $app = Term::App->new({
 		},
 	      }),
 	    ],
-	  }),
-	  Term::App::Widget::Text->new({
+	  })),
+	  Term::App::Widget::Container::TopToBottom->new({
 	    weight => 1,
-	    plugins => ["Centered", "Border"],
-	    events => [
-	      Term::App::Event::Timer->new({
-		seconds => 0.1,
-		callback => sub {
-		  my $widget = shift;
+	    has_focus => 1,
+	    children => [
+	      ($text = Term::App::Widget::Text->new({
+		plugins => ["Paged", "Border"],
+		bindings => { left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down' },
+		has_scrollbar => 0,
+		events => [
+		  Term::App::Event::WatchFile->new({
+		    seconds => 1,
+		    filename => 'testfile',
+		    callback => sub {
+		      my ($widget, $content) = @_;
 
-		  $widget->text($counter++ . "\n" . $widget->rows . "x" . $widget->cols);
-		},
+		      $widget->text($content);
+		    },
+		  }),
+	        ],
+	      })),
+	      Term::App::Widget::Text->new({
+		plugins => ["Centered", "Border"],
+		events => [
+		  Term::App::Event::Timer->new({
+		    seconds => 0.1,
+		    callback => sub {
+		      my $widget = shift;
+
+		      $widget->text($counter++ . "\n" . $widget->rows . "x" . $widget->cols);
+		    },
+		  }),
+		],
 	      }),
 	    ],
 	  }),

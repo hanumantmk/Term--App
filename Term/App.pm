@@ -15,7 +15,7 @@ use strict;
 
 has 'child' => (is => 'ro', isa => 'Term::App::Widget');
 
-has 'screen' => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
+has 'screen' => (is => 'rw', isa => 'Str', default => '');
 
 has 'events' => (is => 'rw', isa => 'ArrayRef[Term::App::Event]', default => sub { [] });
 
@@ -54,6 +54,12 @@ sub _build_keyboard_handler {
   );
 }
 
+sub log {
+  my ($self, $string) = @_;
+
+  warn $string;
+}
+
 sub draw {
   my $self = shift;
 
@@ -66,11 +72,14 @@ sub draw {
   
 #TODO use ANSI sequences to avoid having to clear and redraw
 
-  return if (join('', @$to_draw) eq join('', @{$self->screen}));
+  my $string = join("\n", @$to_draw);
+  $string =~ s/\t/ /g;
 
-  $self->stdout->push_write("\033[H" . join("\n", @$to_draw));
+  return if ($string eq $self->screen);
 
-  $self->screen($to_draw);
+  $self->stdout->push_write("\033[H" . $string);
+
+  $self->screen($string);
 
   return;
 }
@@ -105,7 +114,7 @@ sub BUILD {
     $event->callback(sub {
       $cb->($self,@_);
     });
-    $event->register;
+    $event->register($self);
   }
 }
 

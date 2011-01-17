@@ -4,6 +4,8 @@ use strict;
 
 use Moose;
 
+use List::MoreUtils qw( firstidx );
+
 use Scalar::Util qw( weaken );
 
 has rows => (is => 'rw', isa => 'Int');
@@ -19,7 +21,7 @@ has events => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 has has_focus => (is => 'rw', isa => 'Int');
 has weight => (is => 'rw', isa => 'Int', default => 1);
 
-has app => (is => 'rw', weak_ref => 1);
+has app => (is => 'rw', weak_ref => 1, handles => { log => 'log' });
 
 sub render {
   my $self = shift;
@@ -40,12 +42,32 @@ sub render {
   } @lines];
 }
 
+sub toggle_focus {
+  my ($self, @children) = @_;
+
+  my $idx = firstidx { $_->has_focus } @children;
+
+  $children[$idx]->has_focus(0);
+
+  $idx = ($idx == $#children)
+    ? 0
+    : $idx + 1;
+
+  $children[$idx]->has_focus(1);
+
+  return;
+}
+
 sub receive_key_events {
   my ($self, $tokens) = @_;
 
   foreach my $token (@$tokens) {
     if (my $sub = $self->bindings->{$token}) {
-      $self->$sub($token);
+      if (ref $sub eq 'CODE') {
+	$sub->($self, $token);
+      } else {
+	$self->$sub($token);
+      }
     }
   }
 }

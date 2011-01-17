@@ -99,6 +99,7 @@ around _render => sub {
   my ($orig, $self) = @_;
 
   my @lines = @{$self->$orig()};
+  @lines or return \@lines;
 
   my $row_diff = scalar(@lines) - $self->rows;
   $self->_row_diff($row_diff);
