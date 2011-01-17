@@ -4,7 +4,7 @@ use strict;
 
 use Moose;
 
-use Moose::Util qw( apply_all_roles );
+use Moose::Util qw( with_traits );
 
 use Scalar::Util qw( weaken );
 
@@ -52,12 +52,18 @@ sub receive_key_events {
   }
 }
 
+sub new {
+  my ($class, $args) = @_;
+
+  ($args->{plugins}
+    ? with_traits($class, map { "Term::App::Widget::Role::$_" } @{$args->{plugins}})
+    : $class)->SUPER::new($args);
+}
+
 sub BUILD {
   my $self = shift;
 
   weaken($self);
-
-  apply_all_roles($self, map { "Term::App::Widget::Role::$_" } @{$self->plugins}) if @{$self->plugins};
 
   foreach my $event (@{$self->events}) {
     my $cb = $event->callback;

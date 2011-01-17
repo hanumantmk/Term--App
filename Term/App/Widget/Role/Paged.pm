@@ -8,6 +8,7 @@ use List::Util qw( max min );
 
 has row => (is => 'rw', isa => 'Int', default => 0);
 has col => (is => 'rw', isa => 'Int', default => 0);
+has has_scrollbar => (is => 'rw', isa => 'Int', default => 1);
 
 has '_row_diff' => (is => 'rw', isa => 'Int');
 has '_col_diff' => (is => 'rw', isa => 'Int');
@@ -59,6 +60,10 @@ around render => sub {
   my $cols = $self->cols;
 
   my @lines = @{$self->$orig()};
+
+  if (! $self->has_scrollbar) {
+    return \@lines;
+  }
 
   if ($self->_row_diff > 0) {
     $self->_col_diff > 0 and $rows--;

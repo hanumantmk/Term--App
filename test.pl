@@ -33,6 +33,7 @@ my $app = Term::App->new({
 	  Term::App::Widget::SpreadSheet->new({
 	    weight => 2,
 	    plugins => ["Paged", "Border"],
+	    has_scrollbar => 0,
 	    has_focus => 1,
 	    bindings => { left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down' },
 	    events => [
