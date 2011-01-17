@@ -64,11 +64,17 @@ around render => sub {
     $self->_col_diff > 0 and $rows--;
     my $size = int($rows * ($rows / ($rows + $self->_row_diff)));
     my $percent = $self->row / $self->_row_diff;
-    my $start = int($percent * $rows) - int($percent * $size);
+    my $start = int(($percent * $rows) - ($percent * $size));
     my $end = $start + $size;
 
-    for (my $i = $start; $i < $end; $i++) {
-      substr($lines[$i], -1, 1, '[');
+    my $i = 0;
+    foreach my $line (@lines) {
+      if ($i >= $start && $i < $end) {
+        substr($line, -1, 1, '[');
+      } else {
+        substr($line, -1, 1, ' ');
+      }
+      $i++;
     }
   }
 
@@ -77,7 +83,7 @@ around render => sub {
     $self->_row_diff > 0 and $cols--;
     my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
     my $percent = $self->col / $self->_col_diff;
-    my $start = int($percent * $cols) - int($percent * $size);
+    my $start = int(($percent * $cols) - ($percent * $size));
     substr($lines[-1], $start, $size, '=' x $size);
   }
 
