@@ -4,8 +4,6 @@ use strict;
 
 use Moose;
 
-use Moose::Util qw( with_traits );
-
 use Scalar::Util qw( weaken );
 
 has rows => (is => 'rw', isa => 'Int');
@@ -56,7 +54,7 @@ sub new {
   my ($class, $args) = @_;
 
   ($args->{plugins}
-    ? with_traits($class, map { "Term::App::Widget::Role::$_" } @{$args->{plugins}})
+    ? Moose::Meta::Class->create_anon_class(superclasses => [$class], roles => [map { "Term::App::Widget::Role::$_" } @{$args->{plugins}}], cache => 1)->name
     : $class)->SUPER::new($args);
 }
 
