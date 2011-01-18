@@ -2,38 +2,51 @@ package Term::App::Event::WatchFile;
 
 use Moose;
 
-use AnyEvent;
+use EV;
+use IO::AIO;
+use AnyEvent::AIO;
 
 use Scalar::Util qw( weaken );
 
 extends 'Term::App::Event';
 
-has 'filename' => (is => 'ro', required => 1);
-has 'seconds' => (is => 'ro', required => 1);
+has 'filename'     => (is => 'ro', required => 1);
+has 'seconds'      => (is => 'ro', default => 5);
+has 'initial_read' => (is => 'ro', default => 0);
 
 sub _build_event {
   my $self = shift;
 
   weaken($self);
 
-  my $mtime = 0;
+  if ($self->initial_read) {
+    $self->_aio_slurp_file;
+  }
 
-  AnyEvent->timer(
-    after    => $self->seconds,
-    interval => $self->seconds,
-    cb       => sub {
-      my $new_mtime = [stat($self->filename)]->[9];
+  EV::stat($self->filename, $self->seconds, sub { $self->_aio_slurp_file });
+}
 
-      if ($new_mtime > $mtime) {
-	local $/;
-	open FILE, $self->filename or $self->log("Couldn't open file " . $self->filename . ": $!") and return;
-	my $content = <FILE>;
-	close FILE or $self->log("Couldn't close file " . $self->filename . ": $!") and return;
+sub _aio_slurp_file {
+  my $self = shift;
 
-	$self->callback->($content);
-      }
-    },
-  );
+  weaken($self);
+
+  aio_open $self->filename, IO::AIO::O_RDONLY, 0, sub {
+    my $fh = shift or $self->app->log("couldn't open file " . $self->filename . ": $!") and return;
+
+    my $size = -s $fh;
+
+    my $contents = '';
+    aio_read $fh, 0, $size, $contents, 0, sub {
+      my $read = shift;
+
+      $read == $size or $self->app->log("short read: $!") and return;
+
+      close $fh;
+
+      $self->callback->($contents);
+    };
+  };
 }
 
 no Moose;

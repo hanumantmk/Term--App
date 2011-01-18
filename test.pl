@@ -66,8 +66,8 @@ my $app = Term::App->new({
 		has_scrollbar => 0,
 		events => [
 		  Term::App::Event::WatchFile->new({
-		    seconds => 1,
 		    filename => 'testfile',
+		    initial_read => 1,
 		    callback => sub {
 		      my ($widget, $content) = @_;
 

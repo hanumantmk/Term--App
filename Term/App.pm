@@ -2,6 +2,7 @@ package Term::App;
 
 use Moose;
 
+use EV;
 use AnyEvent;
 use AnyEvent::Handle;
 use Term::ReadKey;
