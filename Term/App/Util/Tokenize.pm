@@ -6,14 +6,21 @@ use List::Util qw( max );
 
 use base 'Exporter';
 
-use constant SYMBOLS => {
-  left_arrow  => join('',map{ chr($_) } (27, 91, 68)),
-  right_arrow => join('',map{ chr($_) } (27, 91, 67)),
-  up_arrow    => join('',map{ chr($_) } (27, 91, 65)),
-  down_arrow  => join('',map{ chr($_) } (27, 91, 66)),
+sub ord_to_string {
+  join('', map { chr($_) } @_);
+}
 
-  page_up     => join('',map{ chr($_) } (27, 91, 53, 126)),
-  page_down   => join('',map{ chr($_) } (27, 91, 54, 126)),
+use constant SYMBOLS => {
+  left_arrow  => ord_to_string(27, 91, 68),
+  right_arrow => ord_to_string(27, 91, 67),
+  up_arrow    => ord_to_string(27, 91, 65),
+  down_arrow  => ord_to_string(27, 91, 66),
+
+  page_up     => ord_to_string(27, 91, 53, 126),
+  page_down   => ord_to_string(27, 91, 54, 126),
+
+  home        => ord_to_string(27, 91, 49, 126),
+  end         => ord_to_string(27, 91, 52, 126),
   
   tab         => "\t",
   newline     => "\n",

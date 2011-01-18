@@ -31,6 +31,18 @@ sub up {
   $self->row and $self->row($self->row - 1);
 }
 
+sub home {
+  my $self = shift;
+
+  $self->row(0);
+}
+
+sub end {
+  my $self = shift;
+
+  $self->row(-1);
+}
+
 sub page_up {
   my $self = shift;
 
@@ -100,6 +112,8 @@ around _render => sub {
 
   my @lines = @{$self->$orig()};
   @lines or return \@lines;
+
+  $self->row == -1 and $self->row(scalar(@lines));
 
   my $row_diff = scalar(@lines) - $self->rows;
   $self->_row_diff($row_diff);
