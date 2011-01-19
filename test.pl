@@ -8,6 +8,7 @@ use Term::App::Widget::Text;
 use Term::App::Widget::Time;
 use Term::App::Widget::Container::LeftToRight;
 use Term::App::Widget::Container::TopToBottom;
+use Term::App::Widget::Histogram;
 use Term::App::Event::TailFile;
 use Term::App::Event::Timer;
 use Term::App::Event::Signal;
@@ -39,6 +40,40 @@ my $app = Term::App->new({
 	    weight => 0,
 	    preferred_cols => 3,
 	    text => "\n" . join("\n", 1..9),
+	  }),
+	  Term::App::Widget::Container::TopToBottom->new({
+	    weight => 1,
+	    children => [
+	      Term::App::Widget::Histogram->new({
+		plugins => ["Border"],
+		buckets => 10,
+		events  => [
+		  Term::App::Event::Timer->new({
+		    seconds  => 1,
+		    callback => sub {
+		      my $widget = shift;
+
+		      push @{$widget->input}, map { int(rand(6)) + int(rand(6)) } (1..10),
+		    },
+		  }),
+		],
+	      }),
+	      Term::App::Widget::Histogram->new({
+		plugins => ["Border"],
+		buckets => 20,
+		orientation => 'vertical',
+		events  => [
+		  Term::App::Event::Timer->new({
+		    seconds  => 1,
+		    callback => sub {
+		      my $widget = shift;
+
+		      push @{$widget->input}, map { int(rand(20)) + int(rand(20)) } (1..10),
+		    },
+		  }),
+		],
+	      }),
+	    ],
 	  }),
 	  ($spreadsheet = Term::App::Widget::SpreadSheet->new({
 	    weight => 2,

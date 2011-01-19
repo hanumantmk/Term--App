@@ -99,10 +99,6 @@ sub loop {
 
   $self->quit_condvar->recv;
 
-  $self->stdout->push_write("\033[?25h");
-
-  ReadMode 0;
-
   return;
 }
 
@@ -123,6 +119,11 @@ sub BUILD {
     });
     $event->register($self);
   }
+}
+
+END {
+  ReadMode 0;
+  print "\033[?25h";
 }
 
 no Moose;
