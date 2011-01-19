@@ -4,7 +4,10 @@ use strict;
 
 use Moose::Role;
 
+use Scalar::Util qw( weaken );
+
 use List::Util qw( max min );
+use List::MoreUtils qw( firstidx );
 
 has row => (is => 'rw', isa => 'Int', default => 0);
 has col => (is => 'rw', isa => 'Int', default => 0);
@@ -63,6 +66,20 @@ sub down {
   my $self = shift;
 
   $self->row($self->row + 1);
+}
+
+sub start_search {
+  my $self = shift;
+
+  weaken($self);
+
+  $self->ask("Search String", sub {
+    my $string = shift;
+
+    my @lines = @{$self->render};
+
+    $self->row((firstidx { /$string/ } @lines) - 1);
+  });
 }
 
 around render => sub {

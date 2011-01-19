@@ -44,7 +44,7 @@ my $app = Term::App->new({
 	    weight => 2,
 	    plugins => ["Paged", "Border"],
 	    has_focus => 1,
-	    bindings => { left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down', home => 'home', end => 'end' },
+	    bindings => { '/' => 'start_search', left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down', home => 'home', end => 'end' },
 	    events => [
 	      Term::App::Event::TailFile->new({
 		filename => "testfile",

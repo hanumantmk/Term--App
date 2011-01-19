@@ -21,11 +21,15 @@ use constant SYMBOLS => {
 
   home        => ord_to_string(27, 91, 49, 126),
   end         => ord_to_string(27, 91, 52, 126),
+
+  backspace   => ord_to_string(127),
+  delete      => ord_to_string(27, 91, 51, 126),
   
   tab         => "\t",
   newline     => "\n",
+  space       => ' ',
 
-  (map { $_, $_ } ( 'a' .. 'z', 'A' .. 'Z', 0 .. 9 )),
+  (map { chr($_), chr($_) } ( 33 .. 126 )),
 };
 
 use constant SIZES => do {

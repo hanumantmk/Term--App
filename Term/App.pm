@@ -14,7 +14,12 @@ use Scalar::Util qw( weaken );
 
 use strict;
 
-has 'child' => (is => 'ro', isa => 'Term::App::Widget');
+has 'child' => (is => 'rw', isa => 'Term::App::Widget', trigger => sub {
+  my ($self, $child) = @_;
+
+  $child->app($self);
+  $child->parent($self);
+});
 
 has 'screen' => (is => 'rw', isa => 'Str', default => '');
 
@@ -108,7 +113,8 @@ sub BUILD {
 
   $self->stdout->push_write("\033[?25l");
 
-  $self->child->app($self);
+  $self->child->parent($self);
+  $self->child->assign_app($self);
 
   foreach my $event (@{$self->events}) {
     my $cb = $event->callback;

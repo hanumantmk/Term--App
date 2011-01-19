@@ -21,6 +21,7 @@ has events => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 has has_focus => (is => 'rw', isa => 'Int');
 has weight => (is => 'rw', isa => 'Int', default => 1);
 
+has parent => (is => 'rw', weak_ref => 1);
 has app => (is => 'rw', weak_ref => 1, handles => { log => 'log' });
 
 sub render {
@@ -62,7 +63,7 @@ sub receive_key_events {
   my ($self, $tokens) = @_;
 
   foreach my $token (@$tokens) {
-    if (my $sub = $self->bindings->{$token}) {
+    if (my $sub = $self->bindings->{''} || $self->bindings->{$token}) {
       if (ref $sub eq 'CODE') {
 	$sub->($self, $token);
       } else {
@@ -92,6 +93,37 @@ sub BUILD {
     });
     $event->register;
   }
+}
+
+sub assign_app {
+  my ($self, $app) = @_;
+
+  $self->app($app);
+}
+
+sub ask {
+  my ($self, $string, $callback) = @_;
+
+  require Term::App::Widget::Question;
+
+  weaken($self);
+
+  my $current_top_level_child = $self->app->child;
+
+  my $question_modal = Term::App::Widget::Question->new({
+    plugins    => ["Border", "Modal"],
+    question   => $string,
+    background => $current_top_level_child,
+    callback   => sub {
+      my $answer = shift;
+
+      $self->app->child($current_top_level_child);
+
+      $callback->($answer);
+    },
+  });
+
+  $self->app->child($question_modal);
 }
 
 no Moose;

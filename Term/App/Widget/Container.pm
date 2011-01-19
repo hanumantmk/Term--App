@@ -22,10 +22,22 @@ sub focused {
   grep { $_->has_focus } @{$self->children};
 }
 
+override assign_app => sub {
+  my ($self, $app) = @_;
+
+  super;
+
+  foreach my $child (@{$self->children}) {
+    $child->assign_app($app);
+  }
+};
+
 sub BUILD {
   my $self = shift;
 
-  $_->app($self->app) for @{$self->children};
+  foreach my $child (@{$self->children}) {
+    $child->parent($self);
+  }
 }
 
 no Moose;
