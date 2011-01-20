@@ -28,8 +28,8 @@ sub _render {
 
   my ($mean, $prms, $median, $min, $max, $adev, $rms) = PDL::Primitive::stats($data);
 
-  $max = max($self->max_val, $max) if defined $self->max_val;
-  $min = min($self->min_val, $min) if defined $self->min_val;
+  $max = min($self->max_val, $max) if defined $self->max_val;
+  $min = max($self->min_val, $min) if defined $self->min_val;
 
   my $step = int(($max - $min) / $self->buckets) || 1;
 
@@ -37,19 +37,17 @@ sub _render {
   my @xvals = PDL::Core::list $xvals;
   my @hist  = PDL::Core::list $hist;
 
-  my @lines;
-  my @y_labels;
-  my $x_size;
-
   if ($self->orientation eq 'horizontal') {
-    $x_size = max map { length } @xvals;
+    my $x_size = max map { length } @xvals;
     my $y_max  = max @hist;
 
     my $bar_size = $self->cols - $x_size - 2;
 
     my $sprintf = "%-" . $x_size . "s " . "%-" . $bar_size . "s";
 
-    @lines = pairwise { sprintf($sprintf, $a, ('X' x ($bar_size * ($b/$y_max)))) } @xvals, @hist;
+    my @lines = pairwise { sprintf($sprintf, $a, ('X' x ($bar_size * ($b/$y_max)))) } @xvals, @hist;
+
+    my @y_labels;
 
     foreach my $h (grep { $_ > 0 } @hist) {
       my @chars = split //, $h;
@@ -58,13 +56,19 @@ sub _render {
 	$y_labels[$i][$bar_size * ($h/$y_max)] = $chars[$i];
       }
     }
+
+    return [
+      @lines,
+      (map {
+	(' ' x $x_size) . join '', map { defined $_ ? $_ : ' ' } @$_;
+      } @y_labels),
+    ];
   } else {
     my $y_size = max map { length } @hist;
-    $x_size = $y_size + 1;
     my $y_max  = max @hist;
     my $x_max  = max map { length } @xvals;
 
-    my $bar_size = $self->rows - $x_max - 1;
+    my $bar_size = $self->rows - $x_max - 2;
 
     my @l;
 
@@ -77,10 +81,14 @@ sub _render {
       $l[$_][$i] = 'X' for 0..$bar;
     }
 
+    my @lines;
+
     for (my $i = 0; $i < @l; $i++) {
       $lines[$bar_size - $i] = sprintf("%-" . $y_size . "s ", $bars{$i} || '') .
-        join('', map { defined $_ ? $_ : ' ' } @{$l[$i]});
+        join(' ', map { defined $_ ? $_ : ' ' } @{$l[$i]});
     }
+
+    my @y_labels;
 
     my $j = 0;
     foreach my $x (@xvals) {
@@ -91,14 +99,15 @@ sub _render {
       }
       $j++;
     }
-  }
 
-  return [
-    @lines,
-    (map {
-      (' ' x $x_size) . join '', map { defined $_ ? $_ : ' ' } @$_;
-    } @y_labels),
-  ];
+    return [
+      @lines,
+      (' ' x ($y_size + 1)) . "=" x (scalar(@{$y_labels[0]} * 2 - 1)),
+      (map {
+	(' ' x ($y_size + 1)) . join(' ', map { defined $_ ? $_ : ' ' } @$_);
+      } @y_labels),
+    ];
+  }
 }
 
 no Moose;
