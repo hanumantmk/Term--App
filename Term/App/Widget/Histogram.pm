@@ -19,12 +19,10 @@ sub _render {
 
   $self->data->size or return [];
 
-  my ($mean, $prms, $median, $min, $max, $adev, $rms) = $self->data->stats;
-
   my $buckets = $self->buckets;
   
   if ($self->orientation eq 'vertical') {
-    my $high = int($self->cols / 2 - length($max));
+    my $high = int($self->cols / 2 - length($self->data->size));
 
     if (! $buckets || $buckets > $high) {
       $buckets = $high;

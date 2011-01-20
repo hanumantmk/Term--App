@@ -56,9 +56,7 @@ sub stats {
 sub size {
   my $self = shift;
 
-  $self->is_empty
-    ? 0
-    : $self->_data->getdim(1);
+  $self->_data->getdim(0);
 }
 
 sub is_empty {

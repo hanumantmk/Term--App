@@ -57,9 +57,7 @@ sub stats {
 sub size {
   my $self = shift;
 
-  $self->is_empty
-    ? 0
-    : $self->_weights->sum;
+  $self->_weights->sum;
 }
 
 no Moose;
