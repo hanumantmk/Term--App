@@ -36,7 +36,7 @@ sub _histogram {
 sub integrate {
   my ($self, @new_data) = @_;
 
-  my $n = PDL::Core::pdl(@new_data);
+  my $n = $self->_scrub_data(\@new_data);
 
   my ($data, $weights) = $self->_histogram($self->_data->append($n), $self->_weights->append($n->ones), $self->granularity);
 

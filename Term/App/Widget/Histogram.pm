@@ -12,8 +12,6 @@ extends 'Term::App::Widget';
 
 has orientation => (is => 'rw', isa => enum([qw( vertical horizontal )]), default => 'horizontal');
 has buckets     => (is => 'rw', isa => 'Int');
-has max_val     => (is => 'rw', isa => 'Int');
-has min_val     => (is => 'rw', isa => 'Int');
 has data        => (is => 'ro', isa => 'Term::App::Data::Numbers', required => 1);
 
 sub _render {
@@ -22,9 +20,6 @@ sub _render {
   $self->data->size or return [];
 
   my ($mean, $prms, $median, $min, $max, $adev, $rms) = $self->data->stats;
-
-  $max = min($self->max_val, $max) if defined $self->max_val;
-  $min = max($self->min_val, $min) if defined $self->min_val;
 
   my $buckets = $self->buckets;
   

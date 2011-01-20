@@ -8,6 +8,8 @@ use PDL::Lite;
 $PDL::SHARE=$PDL::SHARE;
 
 has _data => (is => 'rw', default => sub { PDL::Core::pdl([]) });
+has low   => (is => 'rw');
+has high  => (is => 'rw');
 
 sub histogram {
   my ($self, $num_buckets) = @_;
@@ -28,7 +30,19 @@ sub histogram {
 sub integrate {
   my ($self, @new_data) = @_;
 
-  $self->_data($self->_data->append(PDL::Core::pdl(@new_data)));
+  my $new_data = $self->_scrub_data(\@new_data);
+
+  $self->_data($self->_data->append($new_data));
+}
+
+sub _scrub_data {
+  my ($self, $new_data) = @_;
+
+  my $d = PDL::Core::pdl($new_data);
+
+  $d->inplace->clip($self->low, $self->high) if (defined $self->low or defined $self->high);
+
+  return $d;
 }
 
 sub stats {
