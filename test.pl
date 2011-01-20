@@ -13,6 +13,8 @@ use Term::App::Event::TailFile;
 use Term::App::Event::Timer;
 use Term::App::Event::Signal;
 use Term::App::Event::WatchFile;
+use Term::App::Data::Numbers;
+use Term::App::Data::Numbers::Weighted;
 
 my $counter = 1;
 
@@ -46,13 +48,14 @@ my $app = Term::App->new({
 	    children => [
 	      Term::App::Widget::Histogram->new({
 		plugins => ["Border"],
+		data => Term::App::Data::Numbers->new,
 		events  => [
 		  Term::App::Event::Timer->new({
 		    seconds  => 1,
 		    callback => sub {
 		      my $widget = shift;
 
-		      push @{$widget->input}, map { int(rand(6)) + int(rand(6)) } (1..10),
+		      $widget->data->integrate(map { int(rand(6)) + int(rand(6)) } (1..10)),
 		    },
 		  }),
 		],
@@ -61,13 +64,14 @@ my $app = Term::App->new({
 		plugins => ["Border"],
 		max_val => 30,
 		orientation => 'vertical',
+		data => Term::App::Data::Numbers::Weighted->new,
 		events  => [
 		  Term::App::Event::Timer->new({
 		    seconds  => 1,
 		    callback => sub {
 		      my $widget = shift;
 
-		      push @{$widget->input}, map { int(rand(20)) + int(rand(20)) } (1..10),
+		      $widget->data->integrate(map { int(rand(20)) + int(rand(20)) } (1..1000)),
 		    },
 		  }),
 		],
