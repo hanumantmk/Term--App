@@ -31,10 +31,30 @@ sub _render {
   $max = min($self->max_val, $max) if defined $self->max_val;
   $min = max($self->min_val, $min) if defined $self->min_val;
 
-  my $step = int(($max - $min) / $self->buckets) || 1;
+  my $buckets = $self->buckets;
+  
+  if ($self->orientation eq 'vertical') {
+    my $high = int($self->cols / 2 - length($max) + 1);
+
+    if (! $buckets || $buckets > $high) {
+      $buckets = $high;
+    }
+  } else {
+    my $high = $self->rows - length(scalar(@{$self->input}));
+
+    if (! $buckets || $buckets > $high) {
+      $buckets = $high;
+    }
+  }
+
+  if ($buckets <= 0) {
+    return [];
+  }
+
+  my $step = (($max - $min) / $buckets) || 1;
 
   my ($xvals, $hist) = PDL::Basic::hist($data, $min, $max, $step);
-  my @xvals = PDL::Core::list $xvals;
+  my @xvals = map { sprintf("%.1f", $_) } PDL::Core::list $xvals;
   my @hist  = PDL::Core::list $hist;
 
   if ($self->orientation eq 'horizontal') {

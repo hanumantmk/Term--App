@@ -46,7 +46,6 @@ my $app = Term::App->new({
 	    children => [
 	      Term::App::Widget::Histogram->new({
 		plugins => ["Border"],
-		buckets => 10,
 		events  => [
 		  Term::App::Event::Timer->new({
 		    seconds  => 1,
@@ -60,7 +59,6 @@ my $app = Term::App->new({
 	      }),
 	      Term::App::Widget::Histogram->new({
 		plugins => ["Border"],
-		buckets => 15,
 		max_val => 30,
 		orientation => 'vertical',
 		events  => [
