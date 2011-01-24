@@ -6,22 +6,49 @@ use Moose;
 
 extends 'Term::App::Widget';
 
+use List::MoreUtils qw( firstidx );
 use List::Util qw( max );
 
 use constant FORMAT => {
   f => sub { sprintf("%.2f", $_[0]) },
   d => sub { sprintf("%d",   $_[0]) },
+  s => sub { sprintf("%s",   $_[0]) },
 };
 
 has headers => (is => 'rw', isa => 'ArrayRef[Str]');
 has data_types => (is => 'rw', isa => 'ArrayRef[Str]');
+has sort_column => (is => 'rw', isa => 'Int');
 
 has input => (is => 'rw', isa => 'ArrayRef[ArrayRef[Str]]', default => sub {[]});
+
+sub sort {
+  my $self = shift;
+
+  $self->ask("By which column?", sub {
+    my $column = shift;
+
+    my $idx = firstidx { /$column/ } @{$self->headers};
+    if ($idx < 0) {
+      return;
+    }
+
+    $self->sort_column($idx);
+    $self->app->draw;
+  });
+}
 
 sub _render {
   my $self = shift;
 
   my $input = $self->input;
+
+  if (defined(my $idx = $self->sort_column)) {
+    $input = [sort {
+      ! $self->data_types || $self->data_types->[$idx] eq 's'
+	? $b->[$idx] cmp $a->[$idx]
+	: $b->[$idx] <=> $a->[$idx];
+    } @$input];
+  }
 
   my @data;
 
