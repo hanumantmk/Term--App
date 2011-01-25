@@ -29,7 +29,7 @@ sub _render {
 
   my $reduction = reduce {
     [map {
-      join('', map { defined $_ ? $_ : '' } $a->[$_], $b->[$_]);
+      $self->make_cells($a->[$_], $b->[$_]);
     } (0..(max(scalar(@$a), scalar(@$b)) - 1))];
   } map {
     $_->rows($rows);
@@ -41,9 +41,7 @@ sub _render {
     $_->render;
   } @{$self->children};
 
-  [map {
-    sprintf("%-" . $self->cols . "s", $_);
-  } @$reduction];
+  $reduction;
 }
 
 no Moose;

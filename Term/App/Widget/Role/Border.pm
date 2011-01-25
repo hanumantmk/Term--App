@@ -21,9 +21,9 @@ around render => sub {
   $self->cols($cols);
 
   [ 
-    $border,
-    (map { "|$_|" } @lines),
-    $border,
+    $self->make_cells($border),
+    (map { $self->make_cells("|", $_, "|") } @lines),
+    $self->make_cells($border),
   ];
 };
 

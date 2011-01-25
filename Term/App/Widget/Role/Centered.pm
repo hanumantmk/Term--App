@@ -11,24 +11,29 @@ around _render => sub {
 
   my @lines =
     reverse
-    after_incl { ! /^$/ }
+    after_incl { @$_ }
     reverse
-    after_incl { ! /^$/ }
-    apply { 
-      s/^\s*//;
-      s/\s*$//;
+    after_incl { @$_ }
+    map {
+      [ 
+        reverse
+        after_incl { defined $_->[0] }
+        reverse
+        after_incl { defined $_->[0] }
+        @$_
+      ]
     } @{$self->$orig()};
 
   my $missing_lines = $self->rows - scalar(@lines);
   my $before_lines = ($missing_lines / 2);
 
-  [
-    ('') x $before_lines,
-    map {
-      my $missing = $self->cols - length($_);
+  [ 
+    (map { [] } (1..$before_lines)),
+    (map {
+      my $missing = $self->cols - scalar(@$_);
       my $prefix = int($missing / 2);
-      (' ' x $prefix) . $_;
-    } @lines
+      $self->make_cells($self->make_empty_cells($prefix), $_);
+    } @lines),
   ]
 };
 

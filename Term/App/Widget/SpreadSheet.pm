@@ -107,22 +107,25 @@ sub _render {
   my $break_string  = join("-+-", map { "-" x $_ } @max_sizes);
 
   [
-    sprintf($format_string, @headers),
-    $break_string,
-    (map {
-      my $d = $_;
+    map { $self->make_cells($_) }
+    (
+      sprintf($format_string, @headers),
+      $break_string,
+      (map {
+	my $d = $_;
 
-      my $i = 0;
+	my $i = 0;
 
-      if (ref $d eq 'ARRAY') {
-	for (my $i = scalar(@$d); $i < scalar(@max_sizes); $i++) {
-	  $d->[$i] = '';
+	if (ref $d eq 'ARRAY') {
+	  for (my $i = scalar(@$d); $i < scalar(@max_sizes); $i++) {
+	    $d->[$i] = '';
+	  }
+	  sprintf($format_string, @$d);
+	} else {
+	  $break_string
 	}
-	sprintf($format_string, @$d);
-      } else {
-	$break_string
-      }
-    } @data),
+      } @data),
+    ),
   ];
 }
 

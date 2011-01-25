@@ -22,6 +22,7 @@ has 'child' => (is => 'rw', isa => 'Term::App::Widget', trigger => sub {
 });
 
 has 'screen' => (is => 'rw', isa => 'Str', default => '');
+has '_last_render' => (is => 'rw', default => sub { [[]] });
 
 has 'events' => (is => 'rw', isa => 'ArrayRef[Term::App::Event]', default => sub { [] });
 
@@ -76,9 +77,7 @@ sub draw {
 
   my $to_draw = $self->child->render;
   
-#TODO use ANSI sequences to avoid having to clear and redraw
-
-  my $string = join("\n", @$to_draw);
+  my $string = join("\n", map { join '', map { defined $_->[0] ? $_->[0] : ' ' } @$_ } @$to_draw);
   $string =~ s/\t/ /g;
 
   return if ($string eq $self->screen);

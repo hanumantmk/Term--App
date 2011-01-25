@@ -78,7 +78,7 @@ sub start_search {
 
     my @lines = @{$self->render};
 
-    $self->row((firstidx { /$string/ } @lines) - 1);
+    $self->row((firstidx { join('', map { $_->[0] } @$_) =~ /$string/ } @lines) - 1);
   });
 }
 
@@ -104,21 +104,21 @@ around render => sub {
     my $i = 0;
     foreach my $line (@lines) {
       if ($i >= $start && $i < $end) {
-        substr($line, -1, 1, '[');
+	$line->[-1] = $self->make_cells('[')->[0];
       } else {
-        substr($line, -1, 1, ' ');
+	$line->[-1] = $self->make_empty_cells(1)->[0];
       }
       $i++;
     }
   }
 
   if ($self->_col_diff > 0) {
-    $lines[-1] = ' ' x $cols;
+    $lines[-1] = $self->make_cells(' ' x $cols);
     $self->_row_diff > 0 and $cols--;
     my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
     my $percent = $self->col / $self->_col_diff;
     my $start = int(($percent * $cols) - ($percent * $size));
-    substr($lines[-1], $start, $size, '=' x $size);
+    splice(@{$lines[-1]}, $start, $size, @{$self->make_cells('=' x $size)});
   }
 
   \@lines;
@@ -147,7 +147,7 @@ around _render => sub {
   if ($col_diff > 0) {
     $self->col(min($col_diff, $self->col));
     @lines = map {
-      substr($_, 0, $self->col) = '';
+      splice(@$_, 0, $self->col);
 
       $_;
     } @lines;

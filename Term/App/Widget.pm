@@ -28,19 +28,25 @@ sub render {
   my $self = shift;
 
   return [] if ($self->rows < 1);
-  return [('') x $self->rows] if ($self->cols < 1);
+  return [map { [] } 1..$self->rows] if ($self->cols < 1);
 
   my @lines = @{$self->_render};
 
   if (scalar(@lines) > $self->rows) {
     splice(@lines, $self->rows);
   } elsif (scalar(@lines) < $self->rows) {
-    push @lines, (('') x ($self->rows - scalar(@lines)));
+    push @lines, map { [] } 1..($self->rows - scalar(@lines));
   }
 
-  [map {
-    substr(sprintf("%-" . $self->cols ."s", $_), 0, $self->cols);
-  } @lines];
+  foreach my $line (@lines) {
+    if (scalar(@$line) > $self->cols) {
+      splice(@$line, $self->cols);
+    } else {
+      @$line = @{$self->make_cells($line, $self->make_empty_cells($self->cols - scalar(@$line)))};
+    }
+  }
+
+  \@lines;
 }
 
 sub toggle_focus {
@@ -124,6 +130,25 @@ sub ask {
   });
 
   $self->app->child($question_modal);
+}
+
+sub make_cells {
+  my ($self, @args) = @_;
+
+  [ map {
+    if (ref $_) {
+      @$_;
+    } else {
+#      map { [$_, [$self]] } split //, $_;
+      map { [$_] } split //, $_;
+    }
+  } @args ];
+}
+
+sub make_empty_cells {
+  my ($self, $num) = @_;
+
+  [map { [undef] } (1..$num)];
 }
 
 no Moose;

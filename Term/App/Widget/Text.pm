@@ -11,7 +11,7 @@ has 'text' => (is => 'rw', isa => 'Str', default => '');
 sub _render {
   my $self = shift;
 
-  [split /\n/, $self->text];
+  [map { $self->make_cells($_) } split /\n/, $self->text];
 }
 
 no Moose;

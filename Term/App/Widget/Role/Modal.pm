@@ -56,7 +56,7 @@ around render => sub {
   $length    = int($length);
 
   for (my $i = 0; $i < scalar(@lines); $i++) {
-    substr($background_lines[$start++], $start_col, $length, $lines[$i]);
+    splice(@{$background_lines[$start++]}, $start_col, $length, @{$lines[$i]});
   }
 
   \@background_lines;

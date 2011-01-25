@@ -44,6 +44,8 @@ sub _render {
   my @xvals = map { sprintf("%.1f", $_) } @$xvals;
   my @hist  = @$hist;
 
+  my @pre_lines;
+
   if ($self->orientation eq 'horizontal') {
     my $x_size = max map { length } @xvals;
     my $y_max  = max @hist;
@@ -64,12 +66,12 @@ sub _render {
       }
     }
 
-    return [
+    @pre_lines = (
       @lines,
       (map {
 	(' ' x $x_size) . join '', map { defined $_ ? $_ : ' ' } @$_;
       } @y_labels),
-    ];
+    );
   } else {
     my $y_size = max map { length } @hist;
     my $y_max  = max @hist;
@@ -107,14 +109,18 @@ sub _render {
       $j++;
     }
 
-    return [
+    @pre_lines = (
       @lines,
       (' ' x ($y_size + 1)) . "=" x (scalar(@{$y_labels[0]} * 2 - 1)),
       (map {
 	(' ' x ($y_size + 1)) . join(' ', map { defined $_ ? $_ : ' ' } @$_);
       } @y_labels),
-    ];
+    );
   }
+
+  [map {
+    $self->make_cells($_);
+  } @pre_lines];
 }
 
 no Moose;
