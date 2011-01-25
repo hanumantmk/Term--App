@@ -63,7 +63,7 @@ sub receive_key_events {
   my ($self, $tokens) = @_;
 
   foreach my $token (@$tokens) {
-    if (my $sub = $self->bindings->{''} || $self->bindings->{$token}) {
+    if (my $sub = $self->bindings->{''} || $self->bindings->{ref $token ? $token->[0] : $token}) {
       if (ref $sub eq 'CODE') {
 	$sub->($self, $token);
       } else {

@@ -24,6 +24,10 @@ use constant SYMBOLS => {
 
   backspace   => ord_to_string(127),
   delete      => ord_to_string(27, 91, 51, 126),
+
+  left_click  => [ord_to_string(27, 91, 77, 32), 2],
+  right_click => [ord_to_string(27, 91, 77, 34), 2],
+  middle_click => [ord_to_string(27, 91, 77, 33), 2],
   
   tab         => "\t",
   newline     => "\n",
@@ -36,6 +40,10 @@ use constant SIZES => do {
   my %sizes;
 
   while (my ($key, $value) = each %{+SYMBOLS}) {
+    if (ref $value) {
+      $key = [$key, $value->[1]];
+      $value = $value->[0];
+    }
     $sizes{length($value)}{$value} = $key;
   }
 
@@ -58,6 +66,11 @@ sub tokenize_ansi {
       my $substr = substr($string, 0, $size);
       if (my $token = SIZES->{$size}->{$substr}) {
 	substr($string, 0, $size) = '';
+
+	if (ref $token) {
+	  $token = [$token->[0], map { ord } split //, substr($string, 0, $token->[1], '')];
+	}
+
 	push @tokens, $token;
 	$found_token = 1;
       }

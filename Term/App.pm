@@ -49,7 +49,7 @@ sub _build_keyboard_handler {
 
       $hdl->{rbuf} = '';
 
-      if (grep { $_ eq 'q' } @$tokens) {
+      if (grep { (ref $_ ? $_->[0] : $_) eq 'q' } @$tokens) {
 	$self->quit_condvar->send;
 	return;
       }
@@ -107,7 +107,8 @@ sub BUILD {
 
   weaken($self);
 
-  $self->stdout->push_write("\033[?25l");
+  $self->stdout->push_write("\033[?25l"); # turn off cursor
+  $self->stdout->push_write("\033[?9h"); # turn on mouse events
 
   $self->child->parent($self);
   $self->child->assign_app($self);
@@ -123,7 +124,8 @@ sub BUILD {
 
 END {
   ReadMode 0;
-  print "\033[?25h";
+  print "\033[?25h"; # turn on cursor
+  print "\033[?9l"; # turn off mouse events
 }
 
 no Moose;
