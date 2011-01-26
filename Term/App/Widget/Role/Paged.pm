@@ -147,6 +147,27 @@ around render => sub {
     splice(@{$lines[-1]}, $start, $size, [('=') x $size]);
   }
 
+  if (my $ss = $self->search_string) {
+    foreach my $line (@lines) {
+      my $string = join('', map {
+	defined $_
+	  ? ref $_
+	    ? $_->[0]
+	    : $_
+	  : ' '
+      } @$line );
+
+      if ($string =~ /$ss/) {
+	for (my $i = $-[0]; $i < $+[0]; $i++) {
+	  if (! ref $line->[$i]) {
+	    $line->[$i] = [$line->[$i]];
+	  }
+	  $line->[$i][1]{color} = 'yellow';
+	}
+      }
+    }
+  }
+
   \@lines;
 };
 
