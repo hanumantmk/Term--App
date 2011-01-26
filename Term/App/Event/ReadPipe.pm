@@ -48,7 +48,7 @@ sub _build_event {
   );
 }
 
-sub DESTROY {
+sub DEMOLISH {
   my $self = shift;
 
   kill 15, $self->pid;
