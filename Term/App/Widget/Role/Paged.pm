@@ -12,6 +12,7 @@ use List::MoreUtils qw( firstidx );
 has row => (is => 'rw', isa => 'Int', default => 0);
 has col => (is => 'rw', isa => 'Int', default => 0);
 has has_scrollbar => (is => 'rw', isa => 'Int', default => 1);
+has search_string => (is => 'rw', isa => 'Str');
 
 has '_row_diff' => (is => 'rw', isa => 'Int');
 has '_col_diff' => (is => 'rw', isa => 'Int');
@@ -68,6 +69,31 @@ sub down {
   $self->row($self->row + 1);
 }
 
+sub _search {
+  my ($self, $string) = @_;
+
+  $self->col(0);
+  $self->row($self->row + 1);
+
+  my $idx = firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render};
+
+  if ($idx >= 0) {
+    $self->row($idx + $self->row);
+  } else {
+    $self->row(0);
+
+    $self->row(firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render});
+  }
+
+  $self->app->draw;
+}
+
+sub search_again {
+  my $self = shift;
+
+  $self->_search($self->search_string) if ($self->search_string);
+}
+
 sub start_search {
   my $self = shift;
 
@@ -76,18 +102,9 @@ sub start_search {
   $self->ask("Search String", sub {
     my $string = shift;
 
-    $self->col(0);
-    $self->row($self->row + 1);
+    $self->search_string($string);
 
-    my $idx = (firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render}) + $self->row;
-
-    if ($idx >= 0) {
-      $self->row($idx);
-    } else {
-      $self->row(0);
-
-      $self->row(firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render});
-    }
+    $self->_search($string);
   });
 }
 
