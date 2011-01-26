@@ -17,6 +17,19 @@ has search_string => (is => 'rw', isa => 'Str');
 has '_row_diff' => (is => 'rw', isa => 'Int');
 has '_col_diff' => (is => 'rw', isa => 'Int');
 
+use constant ADDITIONAL_BINDINGS => {
+  '/'           => 'start_search',
+  'n'           => 'search_again',
+  'left_arrow'  => 'left',
+  'right_arrow' => 'right',
+  'up_arrow'    => 'up',
+  'down_arrow'  => 'down',
+  'page_up'     => 'page_up',
+  'page_down'   => 'page_down',
+  'home '       => 'home',
+  'end '        => 'end',
+};
+
 sub left {
   my $self = shift;
 

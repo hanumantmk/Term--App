@@ -11,10 +11,12 @@ use Scalar::Util qw( weaken );
 has rows => (is => 'rw', isa => 'Int');
 has cols => (is => 'rw', isa => 'Int');
 
+has plugins => (is => 'rw', isa => 'ArrayRef[Term::App::Widget::Role]', default => sub { [] });
+
 has preferred_rows => (is => 'rw', isa => 'Int');
 has preferred_cols => (is => 'rw', isa => 'Int');
 
-has bindings => (is => 'ro', isa => 'HashRef', default => sub { {} } );
+has bindings => (is => 'rw', isa => 'HashRef', default => sub { {} } );
 has plugins => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 has events => (is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 
@@ -91,6 +93,17 @@ sub BUILD {
   my $self = shift;
 
   weaken($self);
+
+  $self->bindings({
+    (map {
+      my $class = "Term::App::Widget::Role::$_";
+
+      $class->can('ADDITIONAL_BINDINGS')
+	? %{$class->ADDITIONAL_BINDINGS($self)}
+	: ()
+    } @{$self->plugins}),
+    %{$self->bindings},
+  });
 
   foreach my $event (@{$self->events}) {
     my $cb = $event->callback;
