@@ -116,7 +116,7 @@ sub ask {
 
   my $current_top_level_child = $self->app->child;
 
-  my $question_modal = Term::App::Widget::Question->new({
+  my $question_modal = Term::App::Widget::Question->create({
     plugins    => ["Border", "Modal"],
     question   => $string,
     background => $current_top_level_child,

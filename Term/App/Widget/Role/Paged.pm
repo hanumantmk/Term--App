@@ -76,9 +76,18 @@ sub start_search {
   $self->ask("Search String", sub {
     my $string = shift;
 
-    my @lines = @{$self->_render};
+    $self->col(0);
+    $self->row($self->row + 1);
 
-    $self->row((firstidx { join('', defined $_ ? ref $_ ? $_->[0] : $_ : ' ') =~ /$string/ } @lines) - 1);
+    my $idx = (firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render}) + $self->row;
+
+    if ($idx >= 0) {
+      $self->row($idx);
+    } else {
+      $self->row(0);
+
+      $self->row(firstidx { join('', map { defined $_ ? ref $_ ? $_->[0] : $_ : ' ' } @$_) =~ /$string/ } @{$self->_render});
+    }
   });
 }
 
@@ -130,7 +139,7 @@ around _render => sub {
   my @lines = @{$self->$orig()};
   @lines or return \@lines;
 
-  $self->row == -1 and $self->row(scalar(@lines));
+  $self->row < 0 and $self->row(scalar(@lines));
 
   my $row_diff = scalar(@lines) - $self->rows;
   $self->_row_diff($row_diff);

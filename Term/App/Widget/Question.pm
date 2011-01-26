@@ -20,11 +20,11 @@ sub BUILD {
   weaken($self);
 
   my @children = (
-    Term::App::Widget::Text->new({
+    Term::App::Widget::Text->create({
       preferred_rows => 3,
       text           => "\n" . $self->question . "\n\n",
     }),
-    Term::App::Widget::Text->new({
+    Term::App::Widget::Text->create({
       has_focus => 1,
       preferred_rows => 3,
       plugins => ["Border"],
