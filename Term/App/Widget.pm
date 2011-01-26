@@ -79,12 +79,12 @@ sub receive_key_events {
   }
 }
 
-sub new {
+sub create {
   my ($class, $args) = @_;
 
   ($args->{plugins}
     ? Moose::Meta::Class->create_anon_class(superclasses => [$class], roles => [map { "Term::App::Widget::Role::$_" } @{$args->{plugins}}], cache => 1)->name
-    : $class)->SUPER::new($args);
+    : $class)->new($args);
 }
 
 sub BUILD {
@@ -149,5 +149,7 @@ sub make_special_cells {
 }
 
 no Moose;
+
+__PACKAGE__->meta->make_immutable;
 
 1;

@@ -21,7 +21,7 @@ my $counter = 1;
 my ($spreadsheet, $text);
 
 my $app = Term::App->new({
-  child => Term::App::Widget::Container::TopToBottom->new({
+  child => Term::App::Widget::Container::TopToBottom->create({
     bindings => {
       tab => sub {
 	my $self = shift;
@@ -30,23 +30,23 @@ my $app = Term::App->new({
       }
     },
     children => [
-      Term::App::Widget::Time->new({
+      Term::App::Widget::Time->create({
 	plugins => ["Centered"],
 	weight => 0,
 	preferred_rows => 1,
       }),
-      Term::App::Widget::Container::LeftToRight->new({
+      Term::App::Widget::Container::LeftToRight->create({
 	has_focus => 1,
 	children => [
-	  Term::App::Widget::Text->new({
+	  Term::App::Widget::Text->create({
 	    weight => 0,
 	    preferred_cols => 3,
 	    text => "\n" . join("\n", 1..9),
 	  }),
-	  Term::App::Widget::Container::TopToBottom->new({
+	  Term::App::Widget::Container::TopToBottom->create({
 	    weight => 1,
 	    children => [
-	      Term::App::Widget::Histogram->new({
+	      Term::App::Widget::Histogram->create({
 		plugins => ["Border"],
 		data => Term::App::Data::Numbers->new,
 		events  => [
@@ -60,7 +60,7 @@ my $app = Term::App->new({
 		  }),
 		],
 	      }),
-	      Term::App::Widget::Histogram->new({
+	      Term::App::Widget::Histogram->create({
 		plugins => ["Border"],
 		orientation => 'vertical',
 		data => Term::App::Data::Numbers::Weighted->new({
@@ -79,7 +79,7 @@ my $app = Term::App->new({
 	      }),
 	    ],
 	  }),
-	  ($spreadsheet = Term::App::Widget::SpreadSheet->new({
+	  ($spreadsheet = Term::App::Widget::SpreadSheet->create({
 	    weight => 2,
 	    plugins => ["Paged", "Border"],
 	    has_focus => 1,
@@ -95,11 +95,11 @@ my $app = Term::App->new({
 	      }),
 	    ],
 	  })),
-	  Term::App::Widget::Container::TopToBottom->new({
+	  Term::App::Widget::Container::TopToBottom->create({
 	    weight => 1,
 	    has_focus => 1,
 	    children => [
-	      ($text = Term::App::Widget::Text->new({
+	      ($text = Term::App::Widget::Text->create({
 		plugins => ["Paged", "Border"],
 		bindings => { left_arrow => 'left', right_arrow => 'right', 'down_arrow' => 'down', up_arrow => 'up', page_up => 'page_up', page_down => 'page_down', home => 'home', end => 'end' },
 		has_scrollbar => 0,
@@ -115,7 +115,7 @@ my $app = Term::App->new({
 		  }),
 	        ],
 	      })),
-	      Term::App::Widget::Text->new({
+	      Term::App::Widget::Text->create({
 		plugins => ["Centered", "Border"],
 		events => [
 		  Term::App::Event::Timer->new({

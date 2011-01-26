@@ -51,4 +51,6 @@ sub _aio_slurp_file {
 
 no Moose;
 
+__PACKAGE__->meta->make_immutable;
+
 1;
