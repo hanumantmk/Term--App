@@ -28,7 +28,7 @@ sub render {
   my $self = shift;
 
   return [] if ($self->rows < 1);
-  return [map { [] } 1..$self->rows] if ($self->cols < 1);
+  return [map { [] } 1..$self->rows] if (! $self->cols || $self->cols < 1);
 
   my @lines = @{$self->_render};
 

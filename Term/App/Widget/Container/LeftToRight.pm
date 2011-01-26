@@ -34,7 +34,7 @@ sub _render {
   } map {
     $_->rows($rows);
 
-    if (! $_->preferred_cols) {
+    if (! defined $_->preferred_cols) {
       $_->cols(int($available_cols * ($_->weight / $sum_weight)));
     }
 
