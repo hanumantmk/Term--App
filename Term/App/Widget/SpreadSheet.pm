@@ -107,7 +107,7 @@ sub _render {
   my $break_string  = join("-+-", map { "-" x $_ } @max_sizes);
 
   [
-    map { $self->make_cells($_) }
+    map { [split //] }
     (
       sprintf($format_string, @headers),
       $break_string,

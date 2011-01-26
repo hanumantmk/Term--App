@@ -119,7 +119,7 @@ sub _render {
   }
 
   [map {
-    $self->make_cells($_);
+    [split //];
   } @pre_lines];
 }
 

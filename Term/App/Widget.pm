@@ -132,20 +132,21 @@ sub ask {
   $self->app->child($question_modal);
 }
 
-sub make_cells {
-  my ($self, @args) = @_;
+sub draw {
+  my $self = shift;
 
-  [ map {
-    map { $_ } split //, $_;
-  } @args ];
-}
+  my $to_draw = $self->render;
+  
+  my $string = join("\n", map { join '', map {
+    defined $_
+      ? ref $_
+        ? $_->[0]
+	: $_
+      : ' '
+  } @$_ } @$to_draw);
+  $string =~ s/\t/ /g;
 
-sub make_special_cells {
-  my ($self, $opts, @args) = @_;
-
-  [ map {
-    map { [$_, $opts] } split //, $_;
-  } @args ];
+  return $string;
 }
 
 no Moose;

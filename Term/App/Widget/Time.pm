@@ -9,7 +9,7 @@ extends 'Term::App::Widget';
 sub _render {
   my $self = shift;
 
-  [$self->make_cells(scalar(localtime(time)))];
+  [[split //, scalar(localtime(time))]];
 }
 
 no Moose;

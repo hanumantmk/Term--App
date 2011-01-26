@@ -76,9 +76,9 @@ sub start_search {
   $self->ask("Search String", sub {
     my $string = shift;
 
-    my @lines = @{$self->render};
+    my @lines = @{$self->_render};
 
-    $self->row((firstidx { join('', map { $_->[0] } @$_) =~ /$string/ } @lines) - 1);
+    $self->row((firstidx { join('', defined $_ ? ref $_ ? $_->[0] : $_ : ' ') =~ /$string/ } @lines) - 1);
   });
 }
 
@@ -104,7 +104,7 @@ around render => sub {
     my $i = 0;
     foreach my $line (@lines) {
       if ($i >= $start && $i < $end) {
-	$line->[-1] = $self->make_cells('[')->[0];
+	$line->[-1] = '[';
       } else {
 	$line->[-1] = undef;
       }
@@ -118,7 +118,7 @@ around render => sub {
     my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
     my $percent = $self->col / $self->_col_diff;
     my $start = int(($percent * $cols) - ($percent * $size));
-    splice(@{$lines[-1]}, $start, $size, @{$self->make_cells('=' x $size)});
+    splice(@{$lines[-1]}, $start, $size, [('=') x $size]);
   }
 
   \@lines;

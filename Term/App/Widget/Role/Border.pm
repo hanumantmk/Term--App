@@ -10,7 +10,7 @@ around render => sub {
   my $rows = $self->rows;
   my $cols = $self->cols;
 
-  my $border = $self->make_cells('+' . ('-' x ($cols - 2)) . '+');
+  my $border = [split //, ('+' . ('-' x ($cols - 2)) . '+')];
 
   $self->rows($rows - 2);
   $self->cols($cols - 2);
