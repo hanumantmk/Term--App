@@ -42,7 +42,7 @@ sub render {
     if (scalar(@$line) > $self->cols) {
       splice(@$line, $self->cols);
     } else {
-      @$line = @{$self->make_cells($line, $self->make_empty_cells($self->cols - scalar(@$line)))};
+      $#$line += ($self->cols - scalar(@$line));
     }
   }
 
@@ -136,19 +136,16 @@ sub make_cells {
   my ($self, @args) = @_;
 
   [ map {
-    if (ref $_) {
-      @$_;
-    } else {
-#      map { [$_, [$self]] } split //, $_;
-      map { [$_] } split //, $_;
-    }
+    map { $_ } split //, $_;
   } @args ];
 }
 
-sub make_empty_cells {
-  my ($self, $num) = @_;
+sub make_special_cells {
+  my ($self, $opts, @args) = @_;
 
-  [map { [undef] } (1..$num)];
+  [ map {
+    map { [$_, $opts] } split //, $_;
+  } @args ];
 }
 
 no Moose;

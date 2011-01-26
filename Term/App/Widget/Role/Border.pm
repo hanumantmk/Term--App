@@ -10,7 +10,7 @@ around render => sub {
   my $rows = $self->rows;
   my $cols = $self->cols;
 
-  my $border = '+' . ('-' x ($cols - 2)) . '+';
+  my $border = $self->make_cells('+' . ('-' x ($cols - 2)) . '+');
 
   $self->rows($rows - 2);
   $self->cols($cols - 2);
@@ -21,9 +21,9 @@ around render => sub {
   $self->cols($cols);
 
   [ 
-    $self->make_cells($border),
-    (map { $self->make_cells("|", $_, "|") } @lines),
-    $self->make_cells($border),
+    $border,
+    (map { ["|", @$_, "|"] } @lines),
+    $border,
   ];
 };
 

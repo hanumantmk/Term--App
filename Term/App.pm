@@ -77,7 +77,13 @@ sub draw {
 
   my $to_draw = $self->child->render;
   
-  my $string = join("\n", map { join '', map { defined $_->[0] ? $_->[0] : ' ' } @$_ } @$to_draw);
+  my $string = join("\n", map { join '', map {
+    defined $_
+      ? ref $_
+        ? $_->[0]
+	: $_
+      : ' '
+  } @$_ } @$to_draw);
   $string =~ s/\t/ /g;
 
   return if ($string eq $self->screen);

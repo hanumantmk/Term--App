@@ -29,7 +29,7 @@ sub _render {
 
   my $reduction = reduce {
     [map {
-      $self->make_cells($a->[$_], $b->[$_]);
+      [@{$a->[$_]}, @{$b->[$_]}];
     } (0..(max(scalar(@$a), scalar(@$b)) - 1))];
   } map {
     $_->rows($rows);

@@ -106,14 +106,14 @@ around render => sub {
       if ($i >= $start && $i < $end) {
 	$line->[-1] = $self->make_cells('[')->[0];
       } else {
-	$line->[-1] = $self->make_empty_cells(1)->[0];
+	$line->[-1] = undef;
       }
       $i++;
     }
   }
 
   if ($self->_col_diff > 0) {
-    $lines[-1] = $self->make_cells(' ' x $cols);
+    $lines[-1] = [(undef) x $cols];
     $self->_row_diff > 0 and $cols--;
     my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
     my $percent = $self->col / $self->_col_diff;

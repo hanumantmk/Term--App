@@ -17,9 +17,9 @@ around _render => sub {
     map {
       [ 
         reverse
-        after_incl { defined $_->[0] }
+        after_incl { defined }
         reverse
-        after_incl { defined $_->[0] }
+        after_incl { defined }
         @$_
       ]
     } @{$self->$orig()};
@@ -32,7 +32,7 @@ around _render => sub {
     (map {
       my $missing = $self->cols - scalar(@$_);
       my $prefix = int($missing / 2);
-      $self->make_cells($self->make_empty_cells($prefix), $_);
+      [((undef) x $prefix), @$_];
     } @lines),
   ]
 };
