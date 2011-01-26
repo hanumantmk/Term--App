@@ -8,6 +8,8 @@ use AnyEvent::Handle;
 use Term::ReadKey;
 use Term::App::Util::Tokenize qw( tokenize_ansi );
 
+use Term::ANSIColor qw( color );
+
 use IO::Handle;
 
 use Scalar::Util qw( weaken );
@@ -55,7 +57,21 @@ sub _build_keyboard_handler {
 	return;
       }
 
-      $self->child->receive_key_events($tokens);
+      foreach my $token (@$tokens) {
+	if (ref $token ? $token->[0] : $token =~ 'click' ) {
+	  my ($click, $col, $row) = @$token;
+	  $row-=33;
+	  $col-=33;
+
+	  my $cell = $self->_last_render->[$row][$col];
+
+	  if (defined $cell && ref $cell && $cell->[1]{callback}) {
+	    $cell->[1]{callback}->($click);
+	  }
+	} else {
+	  $self->child->receive_key_events([$token]);
+        }
+      }
       $self->draw;
     },
   );
@@ -75,7 +91,44 @@ sub draw {
   $self->child->rows($rows);
   $self->child->cols($cols);
 
-  my $string = $self->child->draw;
+  my $to_draw = $self->child->render;
+  
+  my $string = join("\n", map {
+    my $color = '';
+
+    join '', map {
+      my $new_color = '';
+
+      if (defined $_ && ref $_ && $_->[1]{color}) {
+	$new_color = $_->[1]{color}
+      }
+
+      my $val = '';
+
+      if ($color && ! $new_color) {
+	$val = color("reset");
+      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
+	$val = color($new_color);
+      }
+
+      $color = $new_color;
+
+      if (defined $_) {
+	if (ref $_) {
+	  $val .= $_->[0]
+	} else {
+	  $val .= $_;
+	}
+      } else {
+	$val .= ' ';
+      }
+
+      $val
+    } @$_
+  } @$to_draw);
+  $string =~ s/\t/ /g;
+
+  $self->_last_render($to_draw);
 
   return if ($string eq $self->screen);
 

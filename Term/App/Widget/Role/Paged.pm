@@ -175,7 +175,11 @@ around _render => sub {
   my ($orig, $self) = @_;
 
   my @lines = @{$self->$orig()};
-  @lines or return \@lines;
+  if (! @lines) {
+    $self->_row_diff(0);
+    $self->_col_diff(0);
+    return \@lines;
+  }
 
   $self->row < 0 and $self->row(scalar(@lines));
 

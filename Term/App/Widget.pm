@@ -6,8 +6,6 @@ use Moose;
 
 use List::MoreUtils qw( firstidx );
 
-use Term::ANSIColor qw( color );
-
 use Scalar::Util qw( weaken );
 
 has rows => (is => 'rw', isa => 'Int');
@@ -132,45 +130,6 @@ sub ask {
   });
 
   $self->app->child($question_modal);
-}
-
-sub draw {
-  my $self = shift;
-
-  my $to_draw = $self->render;
-  
-  my $string = join("\n", map {
-    my $color = '';
-
-    join '', map {
-      my $new_color = defined $_ && ref $_ && $_->[1]{color};
-
-      my $val = '';
-
-      if ($color && !$new_color) {
-	$val = color("reset");
-      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
-	$val = color($new_color);
-      }
-
-      $color = $new_color;
-
-      if (defined $_) {
-	if (ref $_) {
-	  $val .= $_->[0]
-	} else {
-	  $val .= $_;
-	}
-      } else {
-	$val .= ' ';
-      }
-
-      $val
-    } @$_
-  } @$to_draw);
-  $string =~ s/\t/ /g;
-
-  return $string;
 }
 
 no Moose;

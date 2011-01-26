@@ -6,8 +6,10 @@ use Moose;
 
 extends 'Term::App::Widget';
 
-use List::MoreUtils qw( firstidx );
+use List::MoreUtils qw( firstidx pairwise );
 use List::Util qw( max );
+
+use Scalar::Util qw( weaken );
 
 use constant FORMAT => {
   f => sub { sprintf("%.2f", $_[0]) },
@@ -18,6 +20,7 @@ use constant FORMAT => {
 has headers => (is => 'rw', isa => 'ArrayRef[Str]');
 has data_types => (is => 'rw', isa => 'ArrayRef[Str]');
 has sort_column => (is => 'rw', isa => 'Int');
+has reversed => (is => 'rw');
 
 has input => (is => 'rw', isa => 'ArrayRef[ArrayRef[Str]]', default => sub {[]});
 
@@ -26,6 +29,13 @@ sub sort {
 
   $self->ask("By which column?", sub {
     my $column = shift;
+
+    if ($column =~ /^r (.+)$/) {
+      $column = $1;
+      $self->reserved(1);
+    } else {
+      $self->reserved(0);
+    }
 
     my $idx = firstidx { /$column/ } @{$self->headers};
     if ($idx < 0) {
@@ -40,7 +50,11 @@ sub sort {
 sub _render {
   my $self = shift;
 
+  weaken($self);
+
   my $input = $self->input;
+
+  @$input or return [];
 
   if (defined(my $idx = $self->sort_column)) {
     $input = [sort {
@@ -48,6 +62,10 @@ sub _render {
 	? $b->[$idx] cmp $a->[$idx]
 	: $b->[$idx] <=> $a->[$idx];
     } @$input];
+
+    if ($self->reversed) {
+      $input = [reverse @$input];
+    }
   }
 
   my @data;
@@ -106,10 +124,41 @@ sub _render {
   my $format_string = join(" | ", map { "%${_}s" } @max_sizes);
   my $break_string  = join("-+-", map { "-" x $_ } @max_sizes);
 
+  my $header = do {
+    my $i = 0;
+    my @points = map {
+      my $size = $_;
+      my $j = $i++;
+
+      my $callback = sub {
+	if (defined $self->sort_column && $self->sort_column eq $j) {
+	  $self->reversed(! $self->reversed);
+	} else {
+	  $self->sort_column($j);
+	}
+	$self->app->draw;
+      };
+
+      ((($callback) x $size), '', '', '');
+    } @max_sizes;
+
+    splice(@points,-3);
+
+    my @headers = split //, sprintf($format_string, @headers);
+
+    my @header = pairwise {
+      $b
+	? [$a, {callback => $b}]
+	: $a
+    } @headers, @points;
+
+    \@header;
+  };
+
   [
+    $header,
     map { [split //] }
     (
-      sprintf($format_string, @headers),
       $break_string,
       (map {
 	my $d = $_;
