@@ -96,7 +96,7 @@ sub draw {
   my $string = join("\n", map {
     my $color = '';
 
-    join '', map {
+    join('', map {
       my $new_color = '';
 
       if (defined $_ && ref $_ && $_->[1]{color}) {
@@ -124,7 +124,7 @@ sub draw {
       }
 
       $val
-    } @$_
+    } @$_) . ($color ? color('reset') : '');
   } @$to_draw);
   $string =~ s/\t/ /g;
 
