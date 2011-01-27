@@ -26,8 +26,8 @@ use constant ADDITIONAL_BINDINGS => {
   'down_arrow'  => 'down',
   'page_up'     => 'page_up',
   'page_down'   => 'page_down',
-  'home '       => 'home',
-  'end '        => 'end',
+  'home'        => 'home',
+  'end'         => 'end',
 };
 
 sub left {
