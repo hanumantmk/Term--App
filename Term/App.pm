@@ -135,9 +135,16 @@ sub log {
   warn $string;
 }
 
+my $drawing;
+my $more_to_draw;
+
 sub draw {
   my $self = shift;
 
+  if ($drawing) {
+    $more_to_draw = 1;
+    return;
+  }
   my $cols = $self->cols;
   my $rows = $self->rows;
 
@@ -147,6 +154,8 @@ sub draw {
   my $to_draw = $self->child->render;
   $self->_last_render($to_draw);
 
+  $drawing = 1;
+
   $self->_drawer->do($to_draw, sub {
     my ($worker, $string) = @_;
 
@@ -155,11 +164,18 @@ sub draw {
       return;
     }
 
+    $drawing = 0;
+
     return if ($string eq $self->screen);
 
     $self->stdout->push_write("\033[H" . $string);
 
     $self->screen($string);
+
+    if ($more_to_draw) {
+      $more_to_draw = 0;
+      $self->draw;
+    }
 
     return;
   });
