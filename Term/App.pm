@@ -5,8 +5,20 @@ use Moose;
 use EV;
 use AnyEvent;
 use AnyEvent::Handle;
+use AnyEvent::Worker;
 use Term::ReadKey;
 use Term::App::Util::Tokenize qw( tokenize_ansi );
+
+# Nasty trick to let us have a worker handle drawing.  Want to ignore inability
+# to serialize code refs.
+$Storable::forgive_me = 1;
+$SIG{__WARN__} = sub {
+  my $warning = shift;
+
+  if (! ($warning =~ /^Can't store item CODE/)) {
+    warn $warning;
+  }
+};
 
 use Term::ANSIColor qw( color );
 
@@ -22,6 +34,44 @@ has 'child' => (is => 'rw', isa => 'Term::App::Widget', trigger => sub {
   $child->app($self);
   $child->parent($self);
 });
+
+has '_drawer' => (is => 'ro', isa => 'AnyEvent::Worker', default => sub { AnyEvent::Worker->new(sub {
+  my $to_draw = shift;
+
+  my $string = join("\n", map {
+    my $color = '';
+
+    join('', map {
+      my $new_color = '';
+
+      my $val;
+
+      if (defined $_) {
+	if (ref $_) {
+	  $new_color = $_->[1]{color} || '';
+	  $val = $_->[0];
+	} else {
+	  $val = $_;
+	}
+      } else {
+	$val = ' ';
+      }
+
+      if ($color && ! $new_color) {
+	$val = color("reset") . $val;
+      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
+	$val = color($new_color) . $val;
+      }
+
+      $color = $new_color;
+
+      $val
+    } @$_) . ($color ? color('reset') : '');
+  } @$to_draw);
+  $string =~ s/\t/ /g;
+
+  return $string;
+})});
 
 has 'screen' => (is => 'rw', isa => 'Str', default => '');
 has '_last_render' => (is => 'rw', default => sub { [[]] });
@@ -95,48 +145,24 @@ sub draw {
   $self->child->cols($cols);
 
   my $to_draw = $self->child->render;
-  
-  my $string = join("\n", map {
-    my $color = '';
-
-    join('', map {
-      my $new_color = '';
-
-      my $val;
-
-      if (defined $_) {
-	if (ref $_) {
-	  $new_color = $_->[1]{color} || '';
-	  $val = $_->[0];
-	} else {
-	  $val = $_;
-	}
-      } else {
-	$val = ' ';
-      }
-
-      if ($color && ! $new_color) {
-	$val = color("reset") . $val;
-      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
-	$val = color($new_color) . $val;
-      }
-
-      $color = $new_color;
-
-      $val
-    } @$_) . ($color ? color('reset') : '');
-  } @$to_draw);
-  $string =~ s/\t/ /g;
-
   $self->_last_render($to_draw);
 
-  return if ($string eq $self->screen);
+  $self->_drawer->do($to_draw, sub {
+    my ($worker, $string) = @_;
 
-  $self->stdout->push_write("\033[H" . $string);
+    if ($@) {
+      $self->log("Draw errored with: $@");
+      return;
+    }
 
-  $self->screen($string);
+    return if ($string eq $self->screen);
 
-  return;
+    $self->stdout->push_write("\033[H" . $string);
+
+    $self->screen($string);
+
+    return;
+  });
 }
 
 sub loop {
