@@ -129,35 +129,33 @@ around render => sub {
 
   my @lines = @{$self->$orig()};
 
-  if (! $self->has_scrollbar) {
-    return \@lines;
-  }
+  if ($self->has_scrollbar) {
+    if ($self->_row_diff > 0) {
+      $self->_col_diff > 0 and $rows--;
+      my $size = int($rows * ($rows / ($rows + $self->_row_diff)));
+      my $percent = $self->row / $self->_row_diff;
+      my $start = int(($percent * $rows) - ($percent * $size));
+      my $end = $start + $size;
 
-  if ($self->_row_diff > 0) {
-    $self->_col_diff > 0 and $rows--;
-    my $size = int($rows * ($rows / ($rows + $self->_row_diff)));
-    my $percent = $self->row / $self->_row_diff;
-    my $start = int(($percent * $rows) - ($percent * $size));
-    my $end = $start + $size;
-
-    my $i = 0;
-    foreach my $line (@lines) {
-      if ($i >= $start && $i < $end) {
-	$line->[-1] = '[';
-      } else {
-	$line->[-1] = undef;
+      my $i = 0;
+      foreach my $line (@lines) {
+	if ($i >= $start && $i < $end) {
+	  $line->[-1] = '[';
+	} else {
+	  $line->[-1] = undef;
+	}
+	$i++;
       }
-      $i++;
     }
-  }
 
-  if ($self->_col_diff > 0) {
-    $lines[-1] = [(undef) x $cols];
-    $self->_row_diff > 0 and $cols--;
-    my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
-    my $percent = $self->col / $self->_col_diff;
-    my $start = int(($percent * $cols) - ($percent * $size));
-    splice(@{$lines[-1]}, $start, $size, [('=') x $size]);
+    if ($self->_col_diff > 0) {
+      $lines[-1] = [(undef) x $cols];
+      $self->_row_diff > 0 and $cols--;
+      my $size = int($cols * ($cols / ($cols + $self->_col_diff)));
+      my $percent = $self->col / $self->_col_diff;
+      my $start = int(($percent * $cols) - ($percent * $size));
+      splice(@{$lines[-1]}, $start, $size, [('=') x $size]);
+    }
   }
 
   if (my $ss = $self->search_string) {

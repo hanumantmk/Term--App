@@ -33,6 +33,8 @@ has 'keyboard_handler' => (is => 'ro', isa => 'AnyEvent::Handle', builder => '_b
 has 'quit_condvar' => (is => 'ro', default => sub { AnyEvent->condvar });
 
 has 'stdout' => (is => 'ro', default => sub { AnyEvent::Handle->new(fh => \*STDOUT) });
+has 'cols' => (is => 'rw', isa => 'Int');
+has 'rows' => (is => 'rw', isa => 'Int');
 
 sub _build_keyboard_handler {
   my $self = shift;
@@ -86,7 +88,8 @@ sub log {
 sub draw {
   my $self = shift;
 
-  my ($cols, $rows) = GetTerminalSize;
+  my $cols = $self->cols;
+  my $rows = $self->rows;
 
   $self->child->rows($rows);
   $self->child->cols($cols);
@@ -99,29 +102,26 @@ sub draw {
     join('', map {
       my $new_color = '';
 
-      if (defined $_ && ref $_ && $_->[1]{color}) {
-	$new_color = $_->[1]{color}
-      }
-
-      my $val = '';
-
-      if ($color && ! $new_color) {
-	$val = color("reset");
-      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
-	$val = color($new_color);
-      }
-
-      $color = $new_color;
+      my $val;
 
       if (defined $_) {
 	if (ref $_) {
-	  $val .= $_->[0]
+	  $new_color = $_->[1]{color} || '';
+	  $val = $_->[0];
 	} else {
-	  $val .= $_;
+	  $val = $_;
 	}
       } else {
-	$val .= ' ';
+	$val = ' ';
       }
+
+      if ($color && ! $new_color) {
+	$val = color("reset") . $val;
+      } elsif ((! $color && $new_color) || ($color ne $new_color)) {
+	$val = color($new_color) . $val;
+      }
+
+      $color = $new_color;
 
       $val
     } @$_) . ($color ? color('reset') : '');
@@ -151,6 +151,15 @@ sub loop {
   return;
 }
 
+sub refresh_cols_rows {
+  my $self = shift;
+
+  my ($cols, $rows) = GetTerminalSize;
+
+  $self->cols($cols);
+  $self->rows($rows);
+}
+
 sub BUILD {
   my $self = shift;
 
@@ -161,6 +170,19 @@ sub BUILD {
 
   $self->child->parent($self);
   $self->child->assign_app($self);
+
+  $self->refresh_cols_rows;
+
+  require Term::App::Event::Signal;
+
+  push @{$self->events}, Term::App::Event::Signal->new({
+    signal => 'WINCH',
+    callback => sub {
+      my $app = shift;
+
+      $app->refresh_cols_rows;
+    }
+  });
 
   foreach my $event (@{$self->events}) {
     my $cb = $event->callback;
